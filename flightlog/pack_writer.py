@@ -11,7 +11,7 @@ from typing import Any
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from flightlog.json_utils import canonical_json_dumps, sha256_bytes, sha256_file
-from flightlog.models import NormalizedEvent, RedactionReport, FlightlogManifest
+from flightlog.models import FlightlogManifest, NormalizedEvent, RedactionReport
 from flightlog.pack_io import open_pack
 from flightlog.schema_version import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS
 

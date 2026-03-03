@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from flightlog.json_utils import canonical_json_dumps
-from flightlog.models import NormalizedEvent, RedactionReport, FlightlogManifest
+from flightlog.models import FlightlogManifest, NormalizedEvent, RedactionReport
 
 
 def test_models_round_trip() -> None:

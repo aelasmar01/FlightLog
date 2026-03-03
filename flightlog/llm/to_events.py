@@ -44,20 +44,36 @@ def _tool_call_payload(tool_call: ToolCall) -> dict[str, Any]:
     return payload
 
 
-def _common_payload(turn: LLMTurn) -> dict[str, Any]:
+def _usage_payload(turn: LLMTurn) -> dict[str, int | None]:
+    if turn.usage is None:
+        return {
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None,
+        }
+    return {
+        "input_tokens": turn.usage.input_tokens,
+        "output_tokens": turn.usage.output_tokens,
+        "total_tokens": turn.usage.total_tokens,
+    }
+
+
+def _common_payload(
+    turn: LLMTurn,
+    *,
+    raw_request_ref: str | None,
+    raw_response_ref: str | None,
+) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "provider": turn.provider,
+        "model": turn.model,
         "messages": canonicalize_messages(turn.input_messages),
         "tool_calls": [_tool_call_payload(tool_call) for tool_call in turn.tool_calls],
+        "usage": _usage_payload(turn),
+        "cost_usd": turn.cost_usd,
+        "raw_request_ref": raw_request_ref,
+        "raw_response_ref": raw_response_ref,
     }
-    if turn.model is not None:
-        payload["model"] = turn.model
-    if turn.usage is not None:
-        payload["usage"] = canonicalize_json_value(
-            turn.usage.model_dump(mode="json", exclude_none=True)
-        )
-    if turn.cost_usd is not None:
-        payload["cost_usd"] = turn.cost_usd
     if turn.transport is not None:
         payload["transport"] = canonicalize_json_value(
             turn.transport.model_dump(mode="json", exclude_none=True)
@@ -72,19 +88,25 @@ def to_events(
     source: str = "llm.normalized",
     emit_tool_call_events: bool = True,
     event_namespace: str | None = None,
+    raw_request_ref: str | None = None,
+    raw_response_ref: str | None = None,
 ) -> list[NormalizedEvent]:
     resolved_run_id = run_id if run_id is not None else f"{turn.session_id}-turn"
-    request_payload = _common_payload(turn)
-    if turn.raw_request is not None:
-        request_payload["raw_request"] = canonicalize_json_value(turn.raw_request)
+    request_payload = _common_payload(
+        turn,
+        raw_request_ref=raw_request_ref,
+        raw_response_ref=raw_response_ref,
+    )
 
-    response_payload = _common_payload(turn)
+    response_payload = _common_payload(
+        turn,
+        raw_request_ref=raw_request_ref,
+        raw_response_ref=raw_response_ref,
+    )
     if turn.output_message is not None:
         response_payload["output_message"] = canonicalize_message(turn.output_message)
     else:
         response_payload["output_message"] = {"role": "assistant", "content": ""}
-    if turn.raw_response is not None:
-        response_payload["raw_response"] = canonicalize_json_value(turn.raw_response)
 
     events: list[NormalizedEvent] = [
         NormalizedEvent(

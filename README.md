@@ -99,6 +99,11 @@ uv run flightlog pack build \
   --workspace-after tests/fixtures/diffs/snapshot/workspace_after
 ```
 
+## Model Event Schema
+
+`model.request` and `model.response` payloads are provider-agnostic.
+Schema details: [`docs/event_schema.md`](docs/event_schema.md).
+
 ## MCP Capture & Replay
 
 ### Wrap a stdio MCP server and capture transcript

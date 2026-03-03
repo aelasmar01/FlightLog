@@ -1,0 +1,6 @@
+{"direction":"client->server","kind":"request","method":"tool.alpha","payload":{"id":1,"jsonrpc":"2.0","method":"tool.alpha","params":{"x":1}},"request_id":1,"ts":"2026-01-01T00:00:00Z"}
+{"direction":"server->client","kind":"response","method":null,"payload":{"id":1,"jsonrpc":"2.0","result":{"ok":true}},"request_id":1,"ts":"2026-01-01T00:00:00.100000Z"}
+{"direction":"client->server","kind":"request","method":"tool.alpha","payload":{"id":2,"jsonrpc":"2.0","method":"tool.alpha","params":{"x":2}},"request_id":2,"ts":"2026-01-01T00:00:01Z"}
+{"direction":"server->client","kind":"response","method":null,"payload":{"id":2,"jsonrpc":"2.0","result":{"ok":false}},"request_id":2,"ts":"2026-01-01T00:00:01.100000Z"}
+{"direction":"client->server","kind":"request","method":"tool.beta","payload":{"id":3,"jsonrpc":"2.0","method":"tool.beta","params":{"q":"z"}},"request_id":3,"ts":"2026-01-01T00:00:02Z"}
+{"direction":"server->client","kind":"response","method":null,"payload":{"id":3,"jsonrpc":"2.0","result":{"value":3}},"request_id":3,"ts":"2026-01-01T00:00:02.100000Z"}

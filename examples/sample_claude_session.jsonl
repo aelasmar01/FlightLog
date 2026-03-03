@@ -1,0 +1,2 @@
+{"ts":"2026-01-01T00:00:00Z","source":"claude_code","type":"model_request","session_id":"sess-1","run_id":"run-1","prompt":"Write a patch","path":"src/app.py","before":"print('old')\n","after":"print('new')\n"}
+{"ts":"2026-01-01T00:00:01Z","source":"claude_code","type":"tool_result","session_id":"sess-1","run_id":"run-1","tool_output":"ok"}

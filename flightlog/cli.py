@@ -4,31 +4,39 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import typer
 
+from flightlog.assert_gate import run_assert_gate
+from flightlog.audit_export import export_audit
 from flightlog.diff_viewer import render_diff
 from flightlog.ingest import select_ingestor
+from flightlog.json_utils import canonical_json_dumps
 from flightlog.mcp.discovery import discover_servers
 from flightlog.mcp.proxy_http import run_proxy
 from flightlog.mcp.stub_server import serve_stub
 from flightlog.mcp.stubgen import generate_stub_from_transcript, write_stub
 from flightlog.mcp.wrap_stdio import run_wrap
 from flightlog.normalize import ARTIFACT_THRESHOLD_BYTES, normalize_events
+from flightlog.pack_compare import compare_packs, render_compare_text
 from flightlog.pack_writer import create_pack, validate_pack
 from flightlog.redaction import load_redaction_config, redact_artifacts
 from flightlog.replay_runner import run_replay
+from flightlog.signing import sign_pack, verify_pack
+from flightlog.watch import watch_input
 
 app = typer.Typer(help="Flightlog CLI")
 pack_app = typer.Typer(help="Pack build and inspection commands")
 mcp_app = typer.Typer(help="MCP capture/replay commands")
 stub_app = typer.Typer(help="MCP stub commands")
 replay_app = typer.Typer(help="Replay commands")
+export_app = typer.Typer(help="Export commands")
 
 app.add_typer(pack_app, name="pack")
 app.add_typer(mcp_app, name="mcp")
 app.add_typer(replay_app, name="replay")
+app.add_typer(export_app, name="export")
 mcp_app.add_typer(stub_app, name="stub")
 
 
@@ -50,6 +58,40 @@ def root(
     ] = False,
 ) -> None:
     ctx.obj = {"log_json": log_json}
+
+
+@app.command("watch")
+def watch(
+    input_path: Annotated[
+        Path,
+        typer.Option("--input", exists=True, file_okay=True, dir_okay=False),
+    ],
+    out: Annotated[Path | None, typer.Option("--out")] = None,
+    redaction: Annotated[Path | None, typer.Option("--redaction")] = None,
+    poll_interval: Annotated[float, typer.Option("--poll-interval")] = 0.25,
+    max_events: Annotated[int | None, typer.Option("--max-events")] = None,
+    idle_timeout: Annotated[float | None, typer.Option("--idle-timeout")] = None,
+    from_start: Annotated[bool, typer.Option("--from-start")] = False,
+    artifact_threshold_bytes: Annotated[
+        int,
+        typer.Option("--artifact-threshold-bytes"),
+    ] = ARTIFACT_THRESHOLD_BYTES,
+) -> None:
+    def emit(line: str) -> None:
+        typer.echo(line)
+
+    emitted = watch_input(
+        input_path=input_path,
+        emit=emit,
+        out_dir=out,
+        redaction_path=redaction,
+        poll_interval_seconds=poll_interval,
+        max_events=max_events,
+        idle_timeout_seconds=idle_timeout,
+        from_start=from_start,
+        artifact_threshold_bytes=artifact_threshold_bytes,
+    )
+    typer.echo(f"watch completed (emitted={emitted})")
 
 
 @pack_app.command("build")
@@ -135,6 +177,53 @@ def pack_diff(
     raise typer.Exit(code)
 
 
+@pack_app.command("compare")
+def pack_compare(
+    baseline: Annotated[Path, typer.Option("--baseline", exists=True)],
+    candidate: Annotated[Path, typer.Option("--candidate", exists=True)],
+    output_format: Annotated[
+        Literal["text", "json"],
+        typer.Option("--format"),
+    ] = "text",
+) -> None:
+    report = compare_packs(baseline, candidate)
+    if output_format == "json":
+        typer.echo(canonical_json_dumps(report.to_dict()))
+    else:
+        typer.echo(render_compare_text(report))
+
+
+@app.command("assert")
+def assert_cmd(
+    baseline: Annotated[Path, typer.Option("--baseline", exists=True)],
+    candidate: Annotated[Path, typer.Option("--candidate", exists=True)],
+    policy: Annotated[Path | None, typer.Option("--policy")] = None,
+    output_format: Annotated[Literal["text", "json"], typer.Option("--format")] = "text",
+) -> None:
+    result = run_assert_gate(
+        baseline_path=baseline,
+        candidate_path=candidate,
+        policy_path=policy,
+    )
+    payload = {
+        "passed": result.passed,
+        "violations": result.violations,
+        "policy": result.policy,
+        "compare": result.report.to_dict(),
+    }
+
+    if output_format == "json":
+        typer.echo(canonical_json_dumps(payload))
+    else:
+        if result.passed:
+            typer.echo("assertion passed")
+        else:
+            typer.echo("assertion failed")
+            for violation in result.violations:
+                typer.echo(f"- {violation}")
+    raise typer.Exit(0 if result.passed else 1)
+
+
 @mcp_app.command(
     "wrap",
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
@@ -188,6 +277,47 @@ def mcp_list() -> None:
                 ]
             )
         )
+
+
+@export_app.command("audit")
+def export_audit_cmd(
+    pack: Annotated[Path, typer.Option("--pack", exists=True)],
+    out: Annotated[Path, typer.Option("--out")],
+    csv_path: Annotated[Path | None, typer.Option("--csv")] = None,
+    config: Annotated[Path | None, typer.Option("--config")] = None,
+) -> None:
+    export_audit(
+        pack_path=pack,
+        out_json=out,
+        out_csv=csv_path,
+        config_path=config,
+    )
+    typer.echo(str(out))
+
+
+@app.command("sign")
+def sign(
+    pack: Annotated[Path, typer.Option("--pack", exists=True)],
+    key: Annotated[Path, typer.Option("--key", exists=True)],
+    signature: Annotated[Path | None, typer.Option("--signature")] = None,
+) -> None:
+    signature_path = sign_pack(pack_path=pack, private_key_path=key, signature_path=signature)
+    typer.echo(str(signature_path))
+
+
+@app.command("verify")
+def verify(
+    pack: Annotated[Path, typer.Option("--pack", exists=True)],
+    key: Annotated[Path, typer.Option("--key", exists=True)],
+    signature: Annotated[Path | None, typer.Option("--signature")] = None,
+) -> None:
+    ok, errors = verify_pack(pack_path=pack, public_key_path=key, signature_path=signature)
+    if ok:
+        typer.echo("signature verified")
+        raise typer.Exit(0)
+    for error in errors:
+        typer.echo(error)
+    raise typer.Exit(1)
 
 
 @stub_app.command("generate")

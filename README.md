@@ -33,6 +33,49 @@ uv run flightlog pack diff --pack /tmp/flightlog-demo --list
 uv run flightlog pack diff --pack /tmp/flightlog-demo --file src/app.py
 ```
 
+## Live Tail (Issue 18)
+
+```bash
+uv run flightlog watch \
+  --input tests/fixtures/claude_code/claude_session.jsonl \
+  --from-start \
+  --max-events 2
+```
+
+To continuously update a pack while tailing:
+
+```bash
+uv run flightlog watch \
+  --input tests/fixtures/claude_code/claude_session.jsonl \
+  --out /tmp/flightlog-live-pack
+```
+
+## Compare and Assert (Issues 19, 20)
+
+```bash
+uv run flightlog pack compare \
+  --baseline /tmp/flightlog-baseline \
+  --candidate /tmp/flightlog-candidate
+
+uv run flightlog assert \
+  --baseline /tmp/flightlog-baseline \
+  --candidate /tmp/flightlog-candidate \
+  --policy policy.yml
+```
+
+## Audit Export and Signing (Issues 21, 22)
+
+```bash
+uv run flightlog export audit \
+  --pack /tmp/flightlog-demo \
+  --out /tmp/audit.json \
+  --csv /tmp/audit.csv \
+  --config audit.yml
+
+uv run flightlog sign --pack /tmp/flightlog-demo --key private_ed25519.pem
+uv run flightlog verify --pack /tmp/flightlog-demo --key public_ed25519.pem
+```
+
 ## Redaction
 
 Use `redaction.yml.example` as a template:
@@ -89,6 +132,26 @@ uv run flightlog replay run --pack /tmp/flightlog-demo --offline
 ```bash
 uv run flightlog mcp list
 ```
+
+## Packaging and Release (Issue 23)
+
+Build artifacts locally:
+
+```bash
+uv run --with build python -m build
+```
+
+Install directly from GitHub:
+
+```bash
+pipx install 'git+https://github.com/aelasmar01/FlightLog.git'
+```
+
+Tag-based release workflow (`v*`) builds `sdist`/`wheel`, publishes GitHub Releases, and publishes to PyPI when `PYPI_API_TOKEN` is configured.
+
+## Roadmap (Issue 24)
+
+See [`docs/roadmap.md`](docs/roadmap.md) for tracked backlog/status and issue links.
 
 ## Development
 

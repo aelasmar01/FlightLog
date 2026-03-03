@@ -1,0 +1,6 @@
+no_new_missing_stubs: true
+no_new_event_types: false
+no_new_tool_types: false
+allow_added_event_types: []
+max_added_events_by_type:
+  mcp.request: 5

@@ -1,0 +1,6 @@
+owner: platform-observability
+purpose: regression-audit
+data_categories:
+  - prompts
+  - tool-io
+retention: 30d

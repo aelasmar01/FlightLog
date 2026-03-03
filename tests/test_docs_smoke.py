@@ -101,3 +101,11 @@ def test_docs_mcp_wrap_stub_replay(tmp_path: Path) -> None:
     # Step 4: Replay the pack offline against the generated stub.
     result = runner.invoke(app, ["replay", "run", "--pack", str(pack_dir), "--offline"])
     assert result.exit_code == 0, result.output
+
+
+def test_roadmap_doc_links_exist() -> None:
+    roadmap = Path("docs/roadmap.md")
+    assert roadmap.exists()
+    text = roadmap.read_text(encoding="utf-8")
+    for issue_id in range(18, 25):
+        assert f"/issues/{issue_id}" in text

@@ -24,3 +24,24 @@ jobs:
         run: uv run mypy flightlog
       - name: Pytest
         run: uv run pytest -q
+
+  package_smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build package artifacts
+        run: uv run --with build python -m build
+      - name: Install wheel and run CLI
+        run: |
+          python -m venv /tmp/flightlog-wheel
+          /tmp/flightlog-wheel/bin/pip install dist/*.whl
+          /tmp/flightlog-wheel/bin/flightlog --help
+      - name: Install sdist and run CLI
+        run: |
+          python -m venv /tmp/flightlog-sdist
+          /tmp/flightlog-sdist/bin/pip install dist/*.tar.gz
+          /tmp/flightlog-sdist/bin/flightlog --help

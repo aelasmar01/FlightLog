@@ -48,11 +48,34 @@ uv run flightlog pack build \
   --redaction redaction.yml.example
 ```
 
+**5. Live-tail a session and update a pack incrementally:**
+
+```bash
+uv run flightlog watch \
+  --input examples/sample_claude_session.jsonl \
+  --out /tmp/rp-live \
+  --from-start \
+  --max-events 2
+```
+
+**6. Compare two packs and apply a CI-style assertion policy:**
+
+```bash
+uv run flightlog pack compare \
+  --baseline /tmp/rp-demo \
+  --candidate /tmp/rp-redacted \
+  --format json
+
+uv run flightlog assert \
+  --baseline /tmp/rp-demo \
+  --candidate /tmp/rp-redacted
+```
+
 ---
 
 ### Phase 2 — MCP Capture & Replay
 
-**5. Generate a stub directly from the sample transcript:**
+**7. Generate a stub directly from the sample transcript:**
 
 ```bash
 uv run flightlog mcp stub generate \
@@ -60,7 +83,7 @@ uv run flightlog mcp stub generate \
   --out /tmp/rp-stub.json
 ```
 
-**6. Wrap the fake echo server and capture a live transcript:**
+**8. Wrap the fake echo server and capture a live transcript:**
 
 ```bash
 echo '{"jsonrpc":"2.0","id":1,"method":"tool.alpha","params":{"x":1}}' | \
@@ -72,7 +95,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tool.alpha","params":{"x":1}}' | \
 
 The captured transcript appears under `/tmp/rp-mcp/mcp/transcripts/my-server/`.
 
-**7. Generate a stub from the captured transcript:**
+**9. Generate a stub from the captured transcript:**
 
 ```bash
 uv run flightlog mcp stub generate \
@@ -80,7 +103,7 @@ uv run flightlog mcp stub generate \
   --out /tmp/rp-mcp/mcp/stubs/my-server/session.json
 ```
 
-**8. Serve the stub as an offline MCP server:**
+**10. Serve the stub as an offline MCP server:**
 
 ```bash
 echo '{"jsonrpc":"2.0","id":1,"method":"tool.alpha","params":{"x":1}}' | \
@@ -88,8 +111,28 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tool.alpha","params":{"x":1}}' | \
     --stub /tmp/rp-mcp/mcp/stubs/my-server/session.json
 ```
 
-**9. Run an offline replay:**
+**11. Run an offline replay:**
 
 ```bash
 uv run flightlog replay run --pack /tmp/rp-demo --offline
+```
+
+---
+
+### Governance and Signing
+
+**12. Export a deterministic audit report (JSON/CSV):**
+
+```bash
+uv run flightlog export audit \
+  --pack /tmp/rp-demo \
+  --out /tmp/audit.json \
+  --csv /tmp/audit.csv
+```
+
+**13. Sign and verify a pack (Ed25519):**
+
+```bash
+uv run flightlog sign --pack /tmp/rp-demo --key private_ed25519.pem
+uv run flightlog verify --pack /tmp/rp-demo --key public_ed25519.pem
 ```

@@ -1,6 +1,6 @@
-# ReplayPack
+# Flightlog
 
-ReplayPack is a privacy-first "HAR/crash-dump for agents" CLI.
+Flightlog is a privacy-first "HAR/crash-dump for agents" CLI.
 
 It builds portable replay packs from local logs, redacts sensitive material, captures MCP wire traffic, and supports offline replay against deterministic MCP stubs.
 
@@ -15,22 +15,22 @@ uv sync --all-extras
 ### 2. Build a pack from JSONL logs
 
 ```bash
-uv run replaypack pack build \
+uv run flightlog pack build \
   --input tests/fixtures/claude_code/claude_session.jsonl \
-  --out /tmp/replaypack-demo
+  --out /tmp/flightlog-demo
 ```
 
 ### 3. Validate pack integrity
 
 ```bash
-uv run replaypack pack validate --path /tmp/replaypack-demo
+uv run flightlog pack validate --path /tmp/flightlog-demo
 ```
 
 ### 4. List or render diffs in a pack
 
 ```bash
-uv run replaypack pack diff --pack /tmp/replaypack-demo --list
-uv run replaypack pack diff --pack /tmp/replaypack-demo --file src/app.py
+uv run flightlog pack diff --pack /tmp/flightlog-demo --list
+uv run flightlog pack diff --pack /tmp/flightlog-demo --file src/app.py
 ```
 
 ## Redaction
@@ -38,9 +38,9 @@ uv run replaypack pack diff --pack /tmp/replaypack-demo --file src/app.py
 Use `redaction.yml.example` as a template:
 
 ```bash
-uv run replaypack pack build \
+uv run flightlog pack build \
   --input tests/fixtures/claude_code/claude_session.jsonl \
-  --out /tmp/replaypack-demo \
+  --out /tmp/flightlog-demo \
   --redaction redaction.yml.example
 ```
 
@@ -49,9 +49,9 @@ uv run replaypack pack build \
 If logs do not contain patch content, provide workspace snapshots:
 
 ```bash
-uv run replaypack pack build \
+uv run flightlog pack build \
   --input tests/fixtures/diffs/snapshot/no_diff.jsonl \
-  --out /tmp/replaypack-snap \
+  --out /tmp/flightlog-snap \
   --workspace-before tests/fixtures/diffs/snapshot/workspace_before \
   --workspace-after tests/fixtures/diffs/snapshot/workspace_after
 ```
@@ -61,33 +61,33 @@ uv run replaypack pack build \
 ### Wrap a stdio MCP server and capture transcript
 
 ```bash
-uv run replaypack mcp wrap --name demo --out /tmp/replaypack-mcp -- python path/to/server.py
+uv run flightlog mcp wrap --name demo --out /tmp/flightlog-mcp -- python path/to/server.py
 ```
 
 ### Generate stub from transcript
 
 ```bash
-uv run replaypack mcp stub generate \
-  --transcript /tmp/replaypack-mcp/mcp/transcripts/demo/<session>.jsonl \
-  --out /tmp/replaypack-mcp/mcp/stubs/demo/<session>.json
+uv run flightlog mcp stub generate \
+  --transcript /tmp/flightlog-mcp/mcp/transcripts/demo/<session>.jsonl \
+  --out /tmp/flightlog-mcp/mcp/stubs/demo/<session>.json
 ```
 
 ### Serve stub
 
 ```bash
-uv run replaypack mcp stub serve --stub /tmp/replaypack-mcp/mcp/stubs/demo/<session>.json
+uv run flightlog mcp stub serve --stub /tmp/flightlog-mcp/mcp/stubs/demo/<session>.json
 ```
 
 ### Offline replay
 
 ```bash
-uv run replaypack replay run --pack /tmp/replaypack-demo --offline
+uv run flightlog replay run --pack /tmp/flightlog-demo --offline
 ```
 
 ## MCP Discovery
 
 ```bash
-uv run replaypack mcp list
+uv run flightlog mcp list
 ```
 
 ## Development
@@ -95,6 +95,6 @@ uv run replaypack mcp list
 ```bash
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy replaypack
+uv run mypy flightlog
 uv run pytest -q
 ```

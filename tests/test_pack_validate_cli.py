@@ -3,9 +3,9 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from replaypack.cli import app
-from replaypack.models import NormalizedEvent, RedactionReport
-from replaypack.pack_writer import create_pack
+from flightlog.cli import app
+from flightlog.models import NormalizedEvent, RedactionReport
+from flightlog.pack_writer import create_pack
 
 
 def test_pack_validate_cli(tmp_path: Path) -> None:

@@ -1,4 +1,4 @@
-"""ReplayPack command-line interface."""
+"""Flightlog command-line interface."""
 
 from __future__ import annotations
 
@@ -8,19 +8,19 @@ from typing import Annotated, Any
 
 import typer
 
-from replaypack.diff_viewer import render_diff
-from replaypack.ingest import select_ingestor
-from replaypack.mcp.discovery import discover_servers
-from replaypack.mcp.proxy_http import run_proxy
-from replaypack.mcp.stub_server import serve_stub
-from replaypack.mcp.stubgen import generate_stub_from_transcript, write_stub
-from replaypack.mcp.wrap_stdio import run_wrap
-from replaypack.normalize import ARTIFACT_THRESHOLD_BYTES, normalize_events
-from replaypack.pack_writer import create_pack, validate_pack
-from replaypack.redaction import load_redaction_config, redact_artifacts
-from replaypack.replay_runner import run_replay
+from flightlog.diff_viewer import render_diff
+from flightlog.ingest import select_ingestor
+from flightlog.mcp.discovery import discover_servers
+from flightlog.mcp.proxy_http import run_proxy
+from flightlog.mcp.stub_server import serve_stub
+from flightlog.mcp.stubgen import generate_stub_from_transcript, write_stub
+from flightlog.mcp.wrap_stdio import run_wrap
+from flightlog.normalize import ARTIFACT_THRESHOLD_BYTES, normalize_events
+from flightlog.pack_writer import create_pack, validate_pack
+from flightlog.redaction import load_redaction_config, redact_artifacts
+from flightlog.replay_runner import run_replay
 
-app = typer.Typer(help="ReplayPack CLI")
+app = typer.Typer(help="Flightlog CLI")
 pack_app = typer.Typer(help="Pack build and inspection commands")
 mcp_app = typer.Typer(help="MCP capture/replay commands")
 stub_app = typer.Typer(help="MCP stub commands")

@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from replaypack.mcp.stubgen import load_stub, params_hash
+from flightlog.mcp.stubgen import load_stub, params_hash
 
 
 def _find_fallback(method: str, params: Any, stub: dict[str, Any]) -> dict[str, Any] | None:

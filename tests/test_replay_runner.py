@@ -2,8 +2,8 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from replaypack.mcp.stubgen import params_hash
-from replaypack.replay_runner import run_replay
+from flightlog.mcp.stubgen import params_hash
+from flightlog.replay_runner import run_replay
 
 
 def test_replay_runner_offline_success(tmp_path: Path) -> None:

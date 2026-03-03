@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from replaypack.mcp.stubgen import load_stub, params_hash
-from replaypack.pack_io import open_pack
+from flightlog.mcp.stubgen import load_stub, params_hash
+from flightlog.pack_io import open_pack
 
 
 def _load_stubs(pack_dir: Path) -> dict[str, dict[str, Any]]:

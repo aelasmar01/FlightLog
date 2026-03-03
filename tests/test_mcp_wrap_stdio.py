@@ -10,7 +10,7 @@ def test_mcp_wrap_captures_stdio_transcript(tmp_path: Path) -> None:
     cmd = [
         sys.executable,
         "-m",
-        "replaypack.cli",
+        "flightlog.cli",
         "mcp",
         "wrap",
         "--name",

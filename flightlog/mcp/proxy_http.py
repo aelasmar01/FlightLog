@@ -11,9 +11,9 @@ from uuid import uuid4
 
 import httpx
 
-from replaypack.mcp.storage import append_message, transcript_path
-from replaypack.mcp.utils import parse_jsonrpc_payload
-from replaypack.redaction import load_redaction_config, redact_artifacts
+from flightlog.mcp.storage import append_message, transcript_path
+from flightlog.mcp.utils import parse_jsonrpc_payload
+from flightlog.redaction import load_redaction_config, redact_artifacts
 
 
 class _CaptureProxyHandler(BaseHTTPRequestHandler):

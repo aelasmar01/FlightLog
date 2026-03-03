@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
-from replaypack.models import NormalizedEvent, RedactionReport
-from replaypack.pack_writer import create_pack, validate_pack
+from flightlog.models import NormalizedEvent, RedactionReport
+from flightlog.pack_writer import create_pack, validate_pack
 
 
 def test_validate_detects_corruption(tmp_path: Path) -> None:

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
-from replaypack.json_utils import canonical_json_dumps
-from replaypack.models import NormalizedEvent, RedactionReport, ReplayPackManifest
+from flightlog.json_utils import canonical_json_dumps
+from flightlog.models import NormalizedEvent, RedactionReport, FlightlogManifest
 
 
 def test_models_round_trip() -> None:
@@ -21,8 +21,8 @@ def test_models_round_trip() -> None:
     report2 = RedactionReport.model_validate(report.to_dict())
     assert report2.to_dict() == report.to_dict()
 
-    manifest = ReplayPackManifest(schema_version="1.0.0", timeline_sha256="abc")
-    manifest2 = ReplayPackManifest.model_validate(manifest.to_dict())
+    manifest = FlightlogManifest(schema_version="1.0.0", timeline_sha256="abc")
+    manifest2 = FlightlogManifest.model_validate(manifest.to_dict())
     assert manifest2.to_dict() == manifest.to_dict()
 
 

@@ -6,8 +6,8 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-from replaypack.ingest import claude_code, generic_jsonl
-from replaypack.models import NormalizedEvent
+from flightlog.ingest import claude_code, generic_jsonl
+from flightlog.models import NormalizedEvent
 
 
 @dataclass(frozen=True, slots=True)

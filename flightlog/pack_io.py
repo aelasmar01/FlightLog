@@ -16,7 +16,7 @@ def open_pack(pack_path: Path) -> Iterator[Path]:
         return
 
     if pack_path.suffix == ".zip" and pack_path.is_file():
-        with TemporaryDirectory(prefix="replaypack_") as tmp_dir:
+        with TemporaryDirectory(prefix="flightlog_") as tmp_dir:
             tmp_path = Path(tmp_dir)
             with ZipFile(pack_path, "r") as archive:
                 archive.extractall(tmp_path)

@@ -12,8 +12,8 @@ from typing import Any
 
 import yaml
 
-from replaypack.json_utils import canonical_json_dumps
-from replaypack.models import RedactionReport
+from flightlog.json_utils import canonical_json_dumps
+from flightlog.models import RedactionReport
 
 REDACTED_TOKEN = "***REDACTED***"
 

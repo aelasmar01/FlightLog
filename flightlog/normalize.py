@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 from uuid import NAMESPACE_URL, uuid5
 
-from replaypack.models import NormalizedEvent
+from flightlog.models import NormalizedEvent
 
 ARTIFACT_THRESHOLD_BYTES = 4096
 

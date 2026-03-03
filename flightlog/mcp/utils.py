@@ -6,7 +6,7 @@ import json
 from collections.abc import Iterable
 from typing import Any, Literal
 
-from replaypack.mcp.models import McpMessage
+from flightlog.mcp.models import McpMessage
 
 
 def classify_jsonrpc_message(payload: dict[str, Any]) -> tuple[str, str | None, str | int | None]:

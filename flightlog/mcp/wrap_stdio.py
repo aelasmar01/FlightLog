@@ -9,8 +9,8 @@ from threading import Lock, Thread
 from typing import Literal
 from uuid import uuid4
 
-from replaypack.mcp.storage import append_message, transcript_path
-from replaypack.mcp.utils import parse_jsonrpc_payload
+from flightlog.mcp.storage import append_message, transcript_path
+from flightlog.mcp.utils import parse_jsonrpc_payload
 
 
 def run_wrap(name: str, cmd: list[str], output_root: Path) -> tuple[int, Path]:

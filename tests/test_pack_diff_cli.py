@@ -2,7 +2,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from replaypack.cli import app
+from flightlog.cli import app
 
 
 def test_pack_diff_list_and_file(tmp_path: Path) -> None:

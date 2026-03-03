@@ -1,4 +1,4 @@
-from replaypack.redaction import redact_artifacts
+from flightlog.redaction import redact_artifacts
 
 
 def test_redaction_regex_json_and_exclusion() -> None:

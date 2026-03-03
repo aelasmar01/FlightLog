@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-from replaypack.pack_io import open_pack
+from flightlog.pack_io import open_pack
 
 
 @dataclass(frozen=True, slots=True)

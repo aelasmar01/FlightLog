@@ -6,8 +6,8 @@ import json
 from collections.abc import Iterator
 from pathlib import Path
 
-from replaypack.json_utils import canonical_json_dumps
-from replaypack.mcp.models import McpMessage
+from flightlog.json_utils import canonical_json_dumps
+from flightlog.mcp.models import McpMessage
 
 
 def transcript_path(root: Path, server_name: str, session_id: str) -> Path:

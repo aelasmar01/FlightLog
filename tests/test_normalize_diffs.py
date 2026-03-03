@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from replaypack.ingest.claude_code import iter_events
-from replaypack.models import NormalizedEvent
-from replaypack.normalize import normalize_events
+from flightlog.ingest.claude_code import iter_events
+from flightlog.models import NormalizedEvent
+from flightlog.normalize import normalize_events
 
 
 def test_large_payload_moves_to_artifact() -> None:

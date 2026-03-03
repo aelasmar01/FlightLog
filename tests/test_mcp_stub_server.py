@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from replaypack.mcp.stubgen import params_hash
+from flightlog.mcp.stubgen import params_hash
 
 
 def test_stub_server_returns_stubbed_response(tmp_path: Path) -> None:
@@ -23,7 +23,7 @@ def test_stub_server_returns_stubbed_response(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "replaypack.cli",
+            "flightlog.cli",
             "mcp",
             "stub",
             "serve",

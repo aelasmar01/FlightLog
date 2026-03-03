@@ -10,10 +10,10 @@ from tempfile import TemporaryDirectory
 from typing import Any
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from replaypack.json_utils import canonical_json_dumps, sha256_bytes, sha256_file
-from replaypack.models import NormalizedEvent, RedactionReport, ReplayPackManifest
-from replaypack.pack_io import open_pack
-from replaypack.schema_version import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS
+from flightlog.json_utils import canonical_json_dumps, sha256_bytes, sha256_file
+from flightlog.models import NormalizedEvent, RedactionReport, FlightlogManifest
+from flightlog.pack_io import open_pack
+from flightlog.schema_version import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS
 
 
 @dataclass(slots=True)
@@ -35,7 +35,7 @@ def _write_pack_dir(
     artifacts: Mapping[str, bytes | str],
     redaction_report: RedactionReport,
     extra_sections: Mapping[str, Any] | None,
-) -> ReplayPackManifest:
+) -> FlightlogManifest:
     pack_dir.mkdir(parents=True, exist_ok=True)
     artifacts_dir = pack_dir / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -62,7 +62,7 @@ def _write_pack_dir(
     redaction_payload = canonical_json_dumps(redaction_report.to_dict()) + "\n"
     redaction_path.write_text(redaction_payload, encoding="utf-8")
 
-    manifest = ReplayPackManifest(
+    manifest = FlightlogManifest(
         schema_version=SCHEMA_VERSION,
         timeline_sha256=sha256_file(timeline_path),
         artifacts=artifact_hashes,
@@ -91,7 +91,7 @@ def create_pack(
     zip_output: bool = False,
 ) -> PackBuildResult:
     if zip_output:
-        with TemporaryDirectory(prefix="replaypack_build_") as tmp_dir:
+        with TemporaryDirectory(prefix="flightlog_build_") as tmp_dir:
             tmp_path = Path(tmp_dir) / "pack"
             _write_pack_dir(tmp_path, events_iter, artifacts, redaction_report, extra_sections)
             if output_dir.suffix == ".zip":
@@ -117,7 +117,7 @@ def validate_pack(path: Path) -> tuple[bool, list[str]]:
 
         try:
             manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
-            manifest = ReplayPackManifest.model_validate(manifest_data)
+            manifest = FlightlogManifest.model_validate(manifest_data)
         except Exception as exc:  # pragma: no cover - defensive validation path
             return False, [f"manifest parse error: {exc}"]
 

@@ -3,8 +3,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from zipfile import ZipFile
 
-from replaypack.models import NormalizedEvent, RedactionReport
-from replaypack.pack_writer import create_pack
+from flightlog.models import NormalizedEvent, RedactionReport
+from flightlog.pack_writer import create_pack
 
 
 def _build_events() -> list[NormalizedEvent]:

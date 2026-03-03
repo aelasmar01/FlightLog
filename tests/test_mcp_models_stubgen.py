@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from replaypack.mcp.models import McpTranscript
-from replaypack.mcp.storage import iter_messages
-from replaypack.mcp.stubgen import generate_stub, params_hash
+from flightlog.mcp.models import McpTranscript
+from flightlog.mcp.storage import iter_messages
+from flightlog.mcp.stubgen import generate_stub, params_hash
 
 
 def test_stub_generation_from_fixture() -> None:

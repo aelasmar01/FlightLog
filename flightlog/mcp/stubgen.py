@@ -9,9 +9,9 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
-from replaypack.json_utils import canonical_json_dumps
-from replaypack.mcp.models import McpMessage
-from replaypack.mcp.storage import iter_messages
+from flightlog.json_utils import canonical_json_dumps
+from flightlog.mcp.models import McpMessage
+from flightlog.mcp.storage import iter_messages
 
 
 def canonicalize(value: Any) -> Any:

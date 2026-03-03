@@ -6,7 +6,7 @@ from threading import Thread
 
 import httpx
 
-from replaypack.mcp.proxy_http import run_proxy_in_thread
+from flightlog.mcp.proxy_http import run_proxy_in_thread
 
 
 def _free_port() -> int:

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from replaypack.mcp.discovery import discover_servers
+from flightlog.mcp.discovery import discover_servers
 
 
 def test_mcp_discovery_from_env_override(tmp_path: Path, monkeypatch) -> None:
@@ -16,7 +16,7 @@ def test_mcp_discovery_from_env_override(tmp_path: Path, monkeypatch) -> None:
     config_path = tmp_path / "claude_desktop_config.json"
     config_path.write_text(json.dumps(config), encoding="utf-8")
 
-    monkeypatch.setenv("REPLAYPACK_CLAUDE_CONFIG", str(config_path))
+    monkeypatch.setenv("FLIGHTLOG_CLAUDE_CONFIG", str(config_path))
 
     discovered = discover_servers()
     assert len(discovered) == 1

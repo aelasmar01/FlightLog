@@ -10,7 +10,7 @@ from typing import Any
 
 def _candidate_paths() -> list[tuple[str, Path]]:
     candidates: list[tuple[str, Path]] = []
-    override = os.environ.get("REPLAYPACK_CLAUDE_CONFIG")
+    override = os.environ.get("FLIGHTLOG_CLAUDE_CONFIG")
     if override:
         candidates.append(("claude_desktop", Path(override).expanduser()))
 

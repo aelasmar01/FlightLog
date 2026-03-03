@@ -6,13 +6,13 @@ from collections.abc import Iterator
 from pathlib import Path
 from uuid import NAMESPACE_URL, uuid5
 
-from replaypack.ingest.common import (
+from flightlog.ingest.common import (
     iter_jsonl,
     parse_timestamp,
     payload_without_meta,
     stringify_payload,
 )
-from replaypack.models import NormalizedEvent
+from flightlog.models import NormalizedEvent
 
 GENERIC_META_KEYS = {
     "event_id",

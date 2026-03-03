@@ -3,12 +3,12 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "replaypack"
+name = "flightlog"
 version = "0.1.0"
 description = "Replay Pack CLI for agent log capture, redaction, and MCP replay"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "ReplayPack Contributors" }]
+authors = [{ name = "Flightlog Contributors" }]
 dependencies = [
   "pydantic>=2.8,<3",
   "typer>=0.12,<1",
@@ -25,7 +25,7 @@ dev = [
 ]
 
 [project.scripts]
-replaypack = "replaypack.cli:main"
+flightlog = "flightlog.cli:main"
 
 [tool.pytest.ini_options]
 minversion = "8.0"

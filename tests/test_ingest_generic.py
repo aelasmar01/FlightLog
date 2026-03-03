@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from replaypack.ingest.generic_jsonl import detect, extract_artifacts, iter_events
-from replaypack.json_utils import canonical_json_dumps
+from flightlog.ingest.generic_jsonl import detect, extract_artifacts, iter_events
+from flightlog.json_utils import canonical_json_dumps
 
 
 def test_generic_ingest_golden() -> None:

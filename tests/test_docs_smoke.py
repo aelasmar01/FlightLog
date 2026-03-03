@@ -6,7 +6,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from replaypack.cli import app
+from flightlog.cli import app
 
 
 def test_docs_commands_smoke(tmp_path: Path) -> None:
@@ -40,7 +40,7 @@ def test_docs_mcp_wrap_stub_replay(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "replaypack.cli",
+            "flightlog.cli",
             "mcp",
             "wrap",
             "--name",

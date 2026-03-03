@@ -36,7 +36,7 @@
 - PR must pass CI and must not reduce coverage.
 
 ### CLI naming
-Assume binary name is `replaypack`.
+Assume binary name is `flightlog`.
 
 ---
 
@@ -97,11 +97,11 @@ Create a clean Python repo with CI, formatting, linting, typing, and test harnes
 Define stable schemas for replay packs and normalized events, plus serialization helpers.
 
 ### Deliverables
-- `replaypack/models.py` with Pydantic v2 models (or dataclasses + jsonschema if preferred). Must include:
-  - `ReplayPackManifest`
+- `flightlog/models.py` with Pydantic v2 models (or dataclasses + jsonschema if preferred). Must include:
+  - `FlightlogManifest`
   - `NormalizedEvent`
   - `RedactionReport`
-- `replaypack/schema_version.py`
+- `flightlog/schema_version.py`
 - JSON serialization/deserialization helpers.
 
 ### Completion requirements
@@ -121,7 +121,7 @@ Define stable schemas for replay packs and normalized events, plus serialization
 Implement a pack writer that writes the pack directory, computes hashes, and optionally zips it.
 
 ### Deliverables
-- `replaypack/pack_writer.py`
+- `flightlog/pack_writer.py`
   - `create_pack(output_dir, events_iter, artifacts, redaction_report, extra_sections)`
   - writes `timeline.jsonl` and `manifest.json`
   - calculates SHA256 for each artifact and timeline
@@ -156,7 +156,7 @@ Implement privacy-first redaction that runs **before** writing artifacts.
   - file-path exclusions (do not include certain artifacts)
 
 ### Deliverables
-- `replaypack/redaction.py`
+- `flightlog/redaction.py`
 - `redaction.yml.example`
 - `redaction_report.json` builder
 
@@ -176,21 +176,21 @@ Implement privacy-first redaction that runs **before** writing artifacts.
 
 ---
 
-## Issue 05 — CLI skeleton: `replaypack pack build` + help + logging
+## Issue 05 — CLI skeleton: `flightlog pack build` + help + logging
 
 ### Objective
 Create the CLI and wire it to pack writer + redaction.
 
 ### Deliverables
-- `replaypack/cli.py` using Typer (or Click).
+- `flightlog/cli.py` using Typer (or Click).
 - Commands:
-  - `replaypack --help`
-  - `replaypack pack --help`
-  - `replaypack pack build --input <path> --out <dir|zip> [--zip] [--redaction <yml>]`
+  - `flightlog --help`
+  - `flightlog pack --help`
+  - `flightlog pack build --input <path> --out <dir|zip> [--zip] [--redaction <yml>]`
 - Structured logs (JSON option) and human logs.
 
 ### Completion requirements
-- `replaypack pack build` runs end-to-end on fixture input and produces a valid pack.
+- `flightlog pack build` runs end-to-end on fixture input and produces a valid pack.
 
 ### Tests
 - CLI tests using `pytest` + `typer.testing.CliRunner`:
@@ -209,7 +209,7 @@ Parse Claude Code local logs into normalized events.
 - Map tool use/result, model request/response.
 
 ### Deliverables
-- `replaypack/ingest/claude_code.py`
+- `flightlog/ingest/claude_code.py`
   - `detect(input_path) -> bool`
   - `iter_events(input_path) -> Iterator[NormalizedEvent]`
   - `extract_artifacts(...) -> dict`
@@ -229,7 +229,7 @@ Parse Claude Code local logs into normalized events.
 Implement a second ingestor for “codex-like” logs (generic JSONL structure).
 
 ### Deliverables
-- `replaypack/ingest/generic_jsonl.py`
+- `flightlog/ingest/generic_jsonl.py`
 - Auto-select ingestor based on detection.
 
 ### Completion requirements
@@ -248,14 +248,14 @@ Make Phase 1 **always** produce viewable, git-style diffs when file changes exis
 This issue **bakes in** the requirement that diffs are not “best-effort.” If the logs don’t contain enough information, Phase 1 must be able to compute diffs using workspace snapshots provided by the user.
 
 ### Deliverables
-- `replaypack/normalize.py`
+- `flightlog/normalize.py`
   - Artifact policy:
     - if a payload > `ARTIFACT_THRESHOLD_BYTES`, store under `artifacts/` and replace inline payload with an artifact reference.
   - File diff extraction pipeline that supports two sources of truth:
     1) **Log-derived diffs** (preferred): if logs include before/after content or patch/delta info.
     2) **Snapshot-derived diffs** (required fallback): if the user provides workspace snapshots.
 
-- **New CLI flags (Phase 1)** on `replaypack pack build`:
+- **New CLI flags (Phase 1)** on `flightlog pack build`:
   - `--workspace-before <dir>`: directory snapshot of the workspace **before** the run.
   - `--workspace-after <dir>`: directory snapshot of the workspace **after** the run.
   - Behavior:
@@ -268,7 +268,7 @@ This issue **bakes in** the requirement that diffs are not “best-effort.” If
   - Emit `file.diff` events referencing the patch artifact.
 
 - **New CLI command (Phase 1 viewer)**:
-  - `replaypack pack diff --pack <dir|zip> [--file <path>] [--event <event_id>] [--list]`
+  - `flightlog pack diff --pack <dir|zip> [--file <path>] [--event <event_id>] [--list]`
   - Expected behavior:
     - `--list` prints changed files (path + ts + event_id).
     - `--file` prints all diffs for that file.
@@ -280,7 +280,7 @@ This issue **bakes in** the requirement that diffs are not “best-effort.” If
 - **Guaranteed diff rule**:
   - For fixture runs where a file changes, the generated pack MUST contain at least one valid unified diff artifact with headers (`---`, `+++`, `@@`).
   - If the ingested logs do not provide diff content, providing `--workspace-before` and `--workspace-after` MUST still result in valid unified diff artifacts.
-- `replaypack pack diff --list` and `--file` must work on the generated pack.
+- `flightlog pack diff --list` and `--file` must work on the generated pack.
 
 ### Tests
 - Artifact extraction test: payloads larger than threshold become artifacts.
@@ -288,20 +288,20 @@ This issue **bakes in** the requirement that diffs are not “best-effort.” If
   1) **Log-derived diff** fixture: ensure the patch artifact is produced and matches `expected.patch`.
   2) **Snapshot-derived diff** fixture: provide `workspace_before/` and `workspace_after/` directories; ensure unified diff is produced even if logs lack diff data.
 - CLI tests:
-  - `replaypack pack diff --list` prints expected file(s).
-  - `replaypack pack diff --file <path>` prints unified diff with `---/+++` and `@@`.
+  - `flightlog pack diff --list` prints expected file(s).
+  - `flightlog pack diff --file <path>` prints unified diff with `---/+++` and `@@`.
   - Non-zero exit when requesting a missing file/event.
 
 
 ---
 
-## Issue 09 — Pack validation command: `replaypack pack validate`
+## Issue 09 — Pack validation command: `flightlog pack validate`
 
 ### Objective
 Validate structure and hashes.
 
 ### Deliverables
-- `replaypack pack validate --path <pack_dir_or_zip>`
+- `flightlog pack validate --path <pack_dir_or_zip>`
 - Validations:
   - manifest present
   - timeline present
@@ -324,7 +324,7 @@ Validate structure and hashes.
 Define a storage format for MCP wire transcripts and derived stubs.
 
 ### Deliverables
-- `replaypack/mcp/models.py`:
+- `flightlog/mcp/models.py`:
   - `McpMessage` (request/response/notification)
   - `McpTranscript` (session metadata + list of messages)
 - Storage under pack:
@@ -347,13 +347,13 @@ Define a storage format for MCP wire transcripts and derived stubs.
 Provide a wrapper that runs an MCP server process and captures **all stdin/stdout JSON-RPC** messages.
 
 ### CLI
-- `replaypack mcp wrap --name <server> -- <cmd ...>`
+- `flightlog mcp wrap --name <server> -- <cmd ...>`
   - runs the command
   - proxies stdin/stdout
   - writes transcript file
 
 ### Deliverables
-- `replaypack/mcp/wrap_stdio.py`
+- `flightlog/mcp/wrap_stdio.py`
 - CLI integration.
 
 ### Completion requirements
@@ -373,10 +373,10 @@ Provide a wrapper that runs an MCP server process and captures **all stdin/stdou
 Support MCP servers that communicate over HTTP (if applicable in target clients).
 
 ### CLI
-- `replaypack mcp proxy --listen 127.0.0.1:PORT --upstream http://... --name <server>`
+- `flightlog mcp proxy --listen 127.0.0.1:PORT --upstream http://... --name <server>`
 
 ### Deliverables
-- `replaypack/mcp/proxy_http.py` using `httpx`.
+- `flightlog/mcp/proxy_http.py` using `httpx`.
 
 ### Completion requirements
 - Transparent proxying with full body capture.
@@ -400,7 +400,7 @@ Convert captured wire transcripts into replay stubs that can answer tool calls d
   - fallback: allow regex-like match rules in a stub config file
 
 ### Deliverables
-- `replaypack/mcp/stubgen.py`
+- `flightlog/mcp/stubgen.py`
 - Output stub file written under `mcp/stubs/...`.
 
 ### Completion requirements
@@ -419,10 +419,10 @@ Convert captured wire transcripts into replay stubs that can answer tool calls d
 Provide a fake MCP server that serves responses from the stub mapping.
 
 ### CLI
-- `replaypack mcp stub serve --stub <stub.json>`
+- `flightlog mcp stub serve --stub <stub.json>`
 
 ### Deliverables
-- `replaypack/mcp/stub_server.py`
+- `flightlog/mcp/stub_server.py`
 
 ### Completion requirements
 - Implements JSON-RPC read loop.
@@ -434,7 +434,7 @@ Provide a fake MCP server that serves responses from the stub mapping.
 
 ---
 
-## Issue 15 — `replaypack replay run` (offline replay runner)
+## Issue 15 — `flightlog replay run` (offline replay runner)
 
 ### Objective
 Replay a run offline:
@@ -443,10 +443,10 @@ Replay a run offline:
 - When MCP calls appear, route them to stub server (no real network)
 
 ### CLI
-- `replaypack replay run --pack <dir|zip> --offline`
+- `flightlog replay run --pack <dir|zip> --offline`
 
 ### Deliverables
-- `replaypack/replay_runner.py`
+- `flightlog/replay_runner.py`
 
 ### Completion requirements
 - Replayer runs without external dependencies beyond the pack.
@@ -464,7 +464,7 @@ Add utilities to detect configured MCP servers for common clients.
 
 ### Scope (start minimal)
 - Support a config discovery for at least one client (documented path).
-- Provide `replaypack mcp list` to show discovered servers.
+- Provide `flightlog mcp list` to show discovered servers.
 
 ### Completion requirements
 - Does not crash on missing configs.

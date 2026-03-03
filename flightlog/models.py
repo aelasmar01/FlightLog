@@ -54,7 +54,7 @@ class RedactionReport(JsonModel):
         self.replacements += increment
 
 
-class ReplayPackManifest(JsonModel):
+class FlightlogManifest(JsonModel):
     schema_version: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     timeline_path: str = "timeline.jsonl"

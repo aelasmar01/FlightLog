@@ -1,0 +1,4 @@
+"""Schema version constants."""
+
+SCHEMA_VERSION = "1.0.0"
+SUPPORTED_SCHEMA_VERSIONS = {SCHEMA_VERSION}

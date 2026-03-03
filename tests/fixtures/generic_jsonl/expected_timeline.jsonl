@@ -1,0 +1,2 @@
+{"event_id":"66457e66-2c57-5ac0-b6d5-de439e9a792c","payload":{"text":"hello"},"run_id":"gr-1","session_id":"gs-1","source":"codex_cli","ts":"2026-01-01T00:00:00Z","type":"model.request"}
+{"event_id":"ca339ee6-cb2e-5332-bf77-e804d9c26f97","payload":{"text":"world"},"run_id":"gr-1","session_id":"gs-1","source":"codex_cli","ts":"2026-01-01T00:00:01Z","type":"model.response"}

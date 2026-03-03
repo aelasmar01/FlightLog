@@ -1,0 +1,2 @@
+{"timestamp":"2026-01-01T00:00:00Z","source":"codex_cli","type":"model.request","session_id":"gs-1","run_id":"gr-1","payload":{"text":"hello"}}
+{"timestamp":"2026-01-01T00:00:01Z","source":"codex_cli","type":"model.response","session_id":"gs-1","run_id":"gr-1","payload":{"text":"world"}}

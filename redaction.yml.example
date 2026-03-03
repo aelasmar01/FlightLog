@@ -1,0 +1,19 @@
+regex_rules:
+  - name: auth_header
+    pattern: '(?i)(authorization\\s*[:=]\\s*bearer\\s+)([a-z0-9._\\-]+)'
+    mask_groups: [2]
+    replacement: '***REDACTED***'
+  - name: generic_token
+    pattern: '(?i)(token\\s*[:=]\\s*)([A-Za-z0-9._-]{8,})'
+    mask_groups: [2]
+    replacement: '***REDACTED***'
+
+json_keys:
+  - api_key
+  - authorization
+  - token
+  - secret
+  - password
+
+exclude_paths:
+  - 'artifacts/private/**'

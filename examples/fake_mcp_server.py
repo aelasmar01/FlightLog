@@ -4,7 +4,8 @@ Reads JSON-RPC requests from stdin and writes responses to stdout.
 Any method is accepted; the params are echoed back under "result.echo".
 
 Usage:
-    echo '{"jsonrpc":"2.0","id":1,"method":"tool.alpha","params":{"x":1}}' | python fake_mcp_server.py
+    echo '{"jsonrpc":"2.0","id":1,"method":"tool.alpha","params":{"x":1}}' \\
+      | python fake_mcp_server.py
 """
 
 import json

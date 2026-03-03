@@ -1,0 +1,30 @@
+{
+  "modelVersion": "gemini-2.0-flash",
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "Calling tool alpha"
+          },
+          {
+            "functionCall": {
+              "name": "tool.alpha",
+              "args": {
+                "b": 2,
+                "a": 1
+              }
+            }
+          }
+        ]
+      },
+      "finishReason": "STOP"
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 13,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 21
+  }
+}

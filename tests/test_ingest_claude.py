@@ -23,3 +23,16 @@ def test_claude_extract_artifacts() -> None:
     artifacts = extract_artifacts(fixture)
     assert any(key.endswith("_prompt.txt") for key in artifacts)
     assert any(key.endswith("_tool_output.txt") for key in artifacts)
+
+
+def test_claude_no_duplicate_tool_call_events() -> None:
+    fixture = Path("tests/fixtures/claude_code/claude_tool_use_session.jsonl")
+    events = list(iter_events(fixture))
+    tool_call_events = [event for event in events if event.type == "tool.call"]
+    assert len(tool_call_events) == 1
+
+    model_responses = [event for event in events if event.type == "model.response"]
+    assert len(model_responses) == 1
+    assert model_responses[0].payload.get("tool_calls") == [
+        {"id": "toolu_1", "index": 1, "name": "tool.alpha", "arguments_json": {"a": 1, "b": 2}}
+    ]

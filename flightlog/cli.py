@@ -13,8 +13,9 @@ from flightlog.audit_export import export_audit
 from flightlog.diff_viewer import render_diff
 from flightlog.ingest import select_ingestor
 from flightlog.json_utils import canonical_json_dumps
+from flightlog.llm.proxy import run_llm_proxy
 from flightlog.mcp.discovery import discover_servers
-from flightlog.mcp.proxy_http import run_proxy
+from flightlog.mcp.proxy_http import run_proxy as run_mcp_proxy
 from flightlog.mcp.stub_server import serve_stub
 from flightlog.mcp.stubgen import generate_stub_from_transcript, write_stub
 from flightlog.mcp.wrap_stdio import run_wrap
@@ -29,12 +30,14 @@ from flightlog.watch import watch_input
 app = typer.Typer(help="Flightlog CLI")
 pack_app = typer.Typer(help="Pack build and inspection commands")
 mcp_app = typer.Typer(help="MCP capture/replay commands")
+llm_app = typer.Typer(help="LLM capture commands")
 stub_app = typer.Typer(help="MCP stub commands")
 replay_app = typer.Typer(help="Replay commands")
 export_app = typer.Typer(help="Export commands")
 
 app.add_typer(pack_app, name="pack")
 app.add_typer(mcp_app, name="mcp")
+app.add_typer(llm_app, name="llm")
 app.add_typer(replay_app, name="replay")
 app.add_typer(export_app, name="export")
 mcp_app.add_typer(stub_app, name="stub")
@@ -250,12 +253,30 @@ def mcp_proxy(
     out: Annotated[Path, typer.Option("--out")] = Path("."),
     redaction: Annotated[Path | None, typer.Option("--redaction")] = None,
 ) -> None:
-    run_proxy(
+    run_mcp_proxy(
         listen=listen,
         upstream=upstream,
         name=name,
         output_root=out,
         redaction_config_path=redaction,
+    )
+
+
+@llm_app.command("proxy")
+def llm_proxy(
+    listen: Annotated[str, typer.Option("--listen")],
+    upstream: Annotated[str, typer.Option("--upstream")],
+    out: Annotated[Path, typer.Option("--out")] = Path("."),
+    provider_family: Annotated[
+        Literal["anthropic", "openai_compat", "gemini"],
+        typer.Option("--provider-family"),
+    ] = "openai_compat",
+) -> None:
+    run_llm_proxy(
+        listen=listen,
+        upstream=upstream,
+        output_root=out,
+        provider_family=provider_family,
     )
 
 

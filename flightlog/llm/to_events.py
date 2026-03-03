@@ -12,7 +12,13 @@ from flightlog.llm.serialization import canonicalize_json_value
 from flightlog.models import NormalizedEvent
 
 
-def _stable_event_id(turn: LLMTurn, run_id: str, event_type: str, index: int) -> str:
+def _stable_event_id(
+    turn: LLMTurn,
+    run_id: str,
+    event_type: str,
+    index: int,
+    namespace: str | None,
+) -> str:
     payload = {
         "provider": turn.provider,
         "session_id": turn.session_id,
@@ -21,6 +27,8 @@ def _stable_event_id(turn: LLMTurn, run_id: str, event_type: str, index: int) ->
         "event_type": event_type,
         "index": index,
     }
+    if namespace is not None:
+        payload["namespace"] = namespace
     return str(uuid5(NAMESPACE_URL, canonical_json_dumps(payload)))
 
 
@@ -63,6 +71,7 @@ def to_events(
     run_id: str | None = None,
     source: str = "llm.normalized",
     emit_tool_call_events: bool = True,
+    event_namespace: str | None = None,
 ) -> list[NormalizedEvent]:
     resolved_run_id = run_id if run_id is not None else f"{turn.session_id}-turn"
     request_payload = _common_payload(turn)
@@ -79,7 +88,13 @@ def to_events(
 
     events: list[NormalizedEvent] = [
         NormalizedEvent(
-            event_id=_stable_event_id(turn, resolved_run_id, "model.request", 0),
+            event_id=_stable_event_id(
+                turn,
+                resolved_run_id,
+                "model.request",
+                0,
+                event_namespace,
+            ),
             ts=turn.timestamp,
             source=source,
             type="model.request",
@@ -88,7 +103,13 @@ def to_events(
             payload=request_payload,
         ),
         NormalizedEvent(
-            event_id=_stable_event_id(turn, resolved_run_id, "model.response", 0),
+            event_id=_stable_event_id(
+                turn,
+                resolved_run_id,
+                "model.response",
+                0,
+                event_namespace,
+            ),
             ts=turn.timestamp,
             source=source,
             type="model.response",
@@ -102,7 +123,13 @@ def to_events(
         for index, tool_call in enumerate(turn.tool_calls):
             events.append(
                 NormalizedEvent(
-                    event_id=_stable_event_id(turn, resolved_run_id, "tool.call", index),
+                    event_id=_stable_event_id(
+                        turn,
+                        resolved_run_id,
+                        "tool.call",
+                        index,
+                        event_namespace,
+                    ),
                     ts=turn.timestamp,
                     source=source,
                     type="tool.call",

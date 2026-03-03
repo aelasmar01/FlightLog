@@ -27,6 +27,30 @@ def test_docs_commands_smoke(tmp_path: Path) -> None:
     assert diff_list.exit_code == 0, diff_list.stdout
 
 
+def test_docs_llm_fixture_capture_examples(tmp_path: Path) -> None:
+    runner = CliRunner()
+
+    openai_fixture = Path("examples/llm/openai_compat/sample_capture.jsonl").resolve()
+    openai_out = tmp_path / "docs-openai-pack"
+    openai_build = runner.invoke(
+        app,
+        ["pack", "build", "--input", str(openai_fixture), "--out", str(openai_out)],
+    )
+    assert openai_build.exit_code == 0, openai_build.stdout
+    openai_validate = runner.invoke(app, ["pack", "validate", "--path", str(openai_out)])
+    assert openai_validate.exit_code == 0, openai_validate.stdout
+
+    gemini_fixture = Path("examples/llm/gemini/sample_capture.jsonl").resolve()
+    gemini_out = tmp_path / "docs-gemini-pack"
+    gemini_build = runner.invoke(
+        app,
+        ["pack", "build", "--input", str(gemini_fixture), "--out", str(gemini_out)],
+    )
+    assert gemini_build.exit_code == 0, gemini_build.stdout
+    gemini_validate = runner.invoke(app, ["pack", "validate", "--path", str(gemini_out)])
+    assert gemini_validate.exit_code == 0, gemini_validate.stdout
+
+
 def test_docs_mcp_wrap_stub_replay(tmp_path: Path) -> None:
     """End-to-end: mcp wrap -> stub generate -> replay run --offline."""
     repo_root = Path(__file__).resolve().parents[1]

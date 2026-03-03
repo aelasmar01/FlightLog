@@ -33,6 +33,14 @@ uv run flightlog pack diff --pack /tmp/flightlog-demo --list
 uv run flightlog pack diff --pack /tmp/flightlog-demo --file src/app.py
 ```
 
+## LLM Agnostic Normalization
+
+Flightlog normalizes Anthropic, OpenAI-compatible, and Gemini traffic into a shared model-event schema.
+
+- Canonical schema: [`docs/event_schema.md`](docs/event_schema.md)
+- Claude Code log path: `flightlog pack build --input <claude_log.jsonl> ...`
+- HTTP capture-record path: `flightlog pack build --input <capture.jsonl> ...`
+
 ## Live Tail (Issue 18)
 
 ```bash
@@ -131,6 +139,44 @@ uv run flightlog mcp stub serve --stub /tmp/flightlog-mcp/mcp/stubs/demo/<sessio
 ```bash
 uv run flightlog replay run --pack /tmp/flightlog-demo --offline
 ```
+
+## OpenAI-Compatible Reverse Proxy Capture
+
+Run a local proxy that forwards requests and writes capture-record JSONL:
+
+```bash
+uv run flightlog llm proxy \
+  --listen 127.0.0.1:4999 \
+  --upstream https://api.openai.com \
+  --provider-family openai_compat \
+  --out /tmp/flightlog-openai-capture
+```
+
+Then build and validate:
+
+```bash
+uv run flightlog pack build \
+  --input /tmp/flightlog-openai-capture/capture.jsonl \
+  --out /tmp/flightlog-openai-pack
+
+uv run flightlog pack validate --path /tmp/flightlog-openai-pack
+```
+
+Runnable fixture demo: [`examples/llm/openai_compat/README.md`](examples/llm/openai_compat/README.md)
+
+## Gemini Capture + Pack Build
+
+Fixture-based workflow (no live network required):
+
+```bash
+uv run flightlog pack build \
+  --input examples/llm/gemini/sample_capture.jsonl \
+  --out /tmp/flightlog-gemini-pack
+
+uv run flightlog pack validate --path /tmp/flightlog-gemini-pack
+```
+
+Runnable fixture demo: [`examples/llm/gemini/README.md`](examples/llm/gemini/README.md)
 
 ## MCP Discovery
 

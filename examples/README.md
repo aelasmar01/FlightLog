@@ -9,6 +9,8 @@ Self-contained sample fixtures and a step-by-step walkthrough.
 | `sample_claude_session.jsonl` | Minimal Claude Code session log with a model request and a file change. |
 | `sample_mcp_transcript.jsonl` | Recorded MCP JSON-RPC transcript with two methods across three calls. |
 | `fake_mcp_server.py` | Minimal stdio echo MCP server for live-capture examples. |
+| `llm/openai_compat/` | OpenAI-compatible proxy + fixture capture examples. |
+| `llm/gemini/` | Gemini fixture capture example. |
 
 ---
 
@@ -135,4 +137,28 @@ uv run flightlog export audit \
 ```bash
 uv run flightlog sign --pack /tmp/rp-demo --key private_ed25519.pem
 uv run flightlog verify --pack /tmp/rp-demo --key public_ed25519.pem
+```
+
+---
+
+### LLM Multi-Provider Capture
+
+**14. Build a pack from OpenAI-compatible fixture capture:**
+
+```bash
+uv run flightlog pack build \
+  --input examples/llm/openai_compat/sample_capture.jsonl \
+  --out /tmp/rp-openai-capture
+
+uv run flightlog pack validate --path /tmp/rp-openai-capture
+```
+
+**15. Build a pack from Gemini fixture capture:**
+
+```bash
+uv run flightlog pack build \
+  --input examples/llm/gemini/sample_capture.jsonl \
+  --out /tmp/rp-gemini-capture
+
+uv run flightlog pack validate --path /tmp/rp-gemini-capture
 ```

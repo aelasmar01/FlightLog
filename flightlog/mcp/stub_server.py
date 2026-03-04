@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +40,8 @@ def _response_for_request(
     method: str,
     request_id: str | int | None,
     params: Any,
+    counters: dict[str, int],
+    strict: bool,
 ) -> dict[str, Any]:
     methods = stub.get("methods", {})
     if not isinstance(methods, dict):
@@ -46,15 +49,45 @@ def _response_for_request(
 
     method_map = methods.get(method, {})
     request_hash = params_hash(params)
+    counter_key = f"{method}:{request_hash}"
 
     if isinstance(method_map, dict) and request_hash in method_map:
         mapping = method_map[request_hash]
-        if isinstance(mapping, dict):
-            response = {"jsonrpc": "2.0", "id": request_id}
-            if "result" in mapping:
-                response["result"] = mapping["result"]
-            if "error" in mapping:
-                response["error"] = mapping["error"]
+
+        # Support both legacy single-dict format and new list format.
+        if isinstance(mapping, list):
+            idx = counters[counter_key]
+            if idx >= len(mapping):
+                if strict:
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "error": {
+                            "code": -32005,
+                            "message": "Stub sequence exhausted (strict mode)",
+                            "data": {
+                                "method": method,
+                                "params_hash": request_hash,
+                                "call_index": idx,
+                                "sequence_length": len(mapping),
+                            },
+                        },
+                    }
+                # Non-strict: replay last response indefinitely.
+                idx = len(mapping) - 1
+            entry = mapping[idx]
+            counters[counter_key] += 1
+        elif isinstance(mapping, dict):
+            entry = mapping
+        else:
+            entry = {}
+
+        if isinstance(entry, dict):
+            response: dict[str, Any] = {"jsonrpc": "2.0", "id": request_id}
+            if "result" in entry:
+                response["result"] = entry["result"]
+            if "error" in entry:
+                response["error"] = entry["error"]
             return response
 
     fallback = _find_fallback(method, params, stub)
@@ -74,8 +107,9 @@ def _response_for_request(
     }
 
 
-def serve_stub(stub_path: Path) -> int:
+def serve_stub(stub_path: Path, *, strict: bool = False) -> int:
     stub = load_stub(stub_path)
+    counters: dict[str, int] = defaultdict(int)
     for line in sys.stdin:
         stripped = line.strip()
         if not stripped:
@@ -97,6 +131,8 @@ def serve_stub(stub_path: Path) -> int:
             method=method,
             request_id=request_id,
             params=params,
+            counters=counters,
+            strict=strict,
         )
         sys.stdout.write(json.dumps(response, separators=(",", ":"), ensure_ascii=True) + "\n")
         sys.stdout.flush()

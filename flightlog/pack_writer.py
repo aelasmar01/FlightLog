@@ -13,7 +13,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from flightlog.json_utils import canonical_json_dumps, sha256_bytes, sha256_file
 from flightlog.models import FlightlogManifest, NormalizedEvent, RedactionReport
 from flightlog.pack_io import open_pack
-from flightlog.schema_version import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS
+from flightlog.schema_version import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS, is_compatible
 
 
 @dataclass(slots=True)
@@ -105,7 +105,7 @@ def create_pack(
     return PackBuildResult(pack_dir=output_dir, zip_path=None)
 
 
-def validate_pack(path: Path) -> tuple[bool, list[str]]:
+def validate_pack(path: Path, *, allow_major: bool = False) -> tuple[bool, list[str]]:
     errors: list[str] = []
     with open_pack(path) as pack_dir:
         manifest_path = pack_dir / "manifest.json"
@@ -121,8 +121,18 @@ def validate_pack(path: Path) -> tuple[bool, list[str]]:
         except Exception as exc:  # pragma: no cover - defensive validation path
             return False, [f"manifest parse error: {exc}"]
 
-        if manifest.schema_version not in SUPPORTED_SCHEMA_VERSIONS:
-            errors.append(f"unsupported schema version: {manifest.schema_version}")
+        version = manifest.schema_version
+        if version not in SUPPORTED_SCHEMA_VERSIONS:
+            if allow_major and is_compatible(version):
+                errors.append(f"warning: schema version {version} differs from current")
+            elif not is_compatible(version):
+                errors.append(
+                    f"incompatible schema version: {version} "
+                    f"(current MAJOR is {SCHEMA_VERSION.split('.')[0]}; "
+                    "use --allow-major to attempt validation anyway)"
+                )
+            else:
+                errors.append(f"unsupported schema version: {version}")
 
         actual_timeline_hash = sha256_file(timeline_path)
         if actual_timeline_hash != manifest.timeline_sha256:

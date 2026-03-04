@@ -14,10 +14,12 @@ from flightlog.diff_viewer import render_diff
 from flightlog.ingest import select_ingestor
 from flightlog.json_utils import canonical_json_dumps
 from flightlog.llm.proxy import run_llm_proxy
+from flightlog.llm.sdk_capture.install import install_sitecustomize, uninstall_sitecustomize
 from flightlog.mcp.discovery import discover_servers
 from flightlog.mcp.proxy_http import run_proxy as run_mcp_proxy
 from flightlog.mcp.stub_server import serve_stub
 from flightlog.mcp.stubgen import generate_stub_from_transcript, write_stub
+from flightlog.mcp.wrap_http import run_wrap_http_blocking
 from flightlog.mcp.wrap_stdio import run_wrap
 from flightlog.normalize import ARTIFACT_THRESHOLD_BYTES, normalize_events
 from flightlog.pack_compare import compare_packs, render_compare_text
@@ -34,10 +36,12 @@ llm_app = typer.Typer(help="LLM capture commands")
 stub_app = typer.Typer(help="MCP stub commands")
 replay_app = typer.Typer(help="Replay commands")
 export_app = typer.Typer(help="Export commands")
+sdk_app = typer.Typer(help="Python SDK capture helpers")
 
 app.add_typer(pack_app, name="pack")
 app.add_typer(mcp_app, name="mcp")
 app.add_typer(llm_app, name="llm")
+app.add_typer(sdk_app, name="sdk")
 app.add_typer(replay_app, name="replay")
 app.add_typer(export_app, name="export")
 mcp_app.add_typer(stub_app, name="stub")
@@ -157,8 +161,14 @@ def pack_build(
 
 
 @pack_app.command("validate")
-def pack_validate(path: Annotated[Path, typer.Option("--path", exists=True)]) -> None:
-    ok, errors = validate_pack(path)
+def pack_validate(
+    path: Annotated[Path, typer.Option("--path", exists=True)],
+    allow_major: Annotated[
+        bool,
+        typer.Option("--allow-major", help="Attempt validation even if MAJOR version differs"),
+    ] = False,
+) -> None:
+    ok, errors = validate_pack(path, allow_major=allow_major)
     if ok:
         typer.echo("Pack is valid")
         raise typer.Exit(0)
@@ -252,11 +262,38 @@ def mcp_proxy(
     name: Annotated[str, typer.Option("--name")],
     out: Annotated[Path, typer.Option("--out")] = Path("."),
     redaction: Annotated[Path | None, typer.Option("--redaction")] = None,
+    otel: Annotated[
+        bool, typer.Option("--otel", help="Write OTel spans to <out>/otel/spans.jsonl")
+    ] = False,
 ) -> None:
+    span_recorder = None
+    if otel:
+        from flightlog.otel.span_export import SpanRecorder
+
+        span_recorder = SpanRecorder(out)
     run_mcp_proxy(
         listen=listen,
         upstream=upstream,
         name=name,
+        output_root=out,
+        redaction_config_path=redaction,
+        span_recorder=span_recorder,
+    )
+
+
+@mcp_app.command("wrap-http")
+def mcp_wrap_http(
+    name: Annotated[str, typer.Option("--name")],
+    listen: Annotated[str, typer.Option("--listen")],
+    upstream: Annotated[str, typer.Option("--upstream")],
+    out: Annotated[Path, typer.Option("--out")] = Path("."),
+    redaction: Annotated[Path | None, typer.Option("--redaction")] = None,
+) -> None:
+    """Record an HTTP MCP server's traffic (wrap semantics over HTTP proxy)."""
+    run_wrap_http_blocking(
+        name=name,
+        listen=listen,
+        upstream=upstream,
         output_root=out,
         redaction_config_path=redaction,
     )
@@ -281,8 +318,24 @@ def llm_proxy(
 
 
 @mcp_app.command("list")
-def mcp_list() -> None:
-    discovered = discover_servers()
+def mcp_list(
+    client: Annotated[
+        str,
+        typer.Option(
+            "--client",
+            help="Backend to query: auto | claude_desktop | cursor | zed",
+        ),
+    ] = "auto",
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", help="Parse this config file directly"),
+    ] = None,
+) -> None:
+    try:
+        discovered = discover_servers(client=client, config_path=config)
+    except ValueError as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(1) from exc
     if not discovered:
         typer.echo("No MCP servers found")
         return
@@ -353,8 +406,14 @@ def mcp_stub_generate(
 
 
 @stub_app.command("serve")
-def mcp_stub_serve(stub: Annotated[Path, typer.Option("--stub", exists=True)]) -> None:
-    code = serve_stub(stub)
+def mcp_stub_serve(
+    stub: Annotated[Path, typer.Option("--stub", exists=True)],
+    strict: Annotated[
+        bool,
+        typer.Option("--strict", help="Fail if call count exceeds captured sequence"),
+    ] = False,
+) -> None:
+    code = serve_stub(stub, strict=strict)
     raise typer.Exit(code)
 
 
@@ -369,6 +428,36 @@ def replay_run(
             typer.echo(mismatch)
         raise typer.Exit(1)
     typer.echo(f"Replay successful ({events} events)")
+
+
+@sdk_app.command("install-sitecustomize")
+def sdk_install(
+    venv: Annotated[Path, typer.Option("--venv", help="Path to the target Python venv root")],
+) -> None:
+    """Install the Flightlog SDK capture .pth hook into a venv's site-packages."""
+    try:
+        pth_path = install_sitecustomize(venv)
+        typer.echo(f"Installed: {pth_path}")
+        typer.echo("Enable capture by setting FLIGHTLOG=1 before running your Python process.")
+    except FileNotFoundError as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(1) from exc
+
+
+@sdk_app.command("uninstall-sitecustomize")
+def sdk_uninstall(
+    venv: Annotated[Path, typer.Option("--venv", help="Path to the target Python venv root")],
+) -> None:
+    """Remove the Flightlog SDK capture .pth hook from a venv's site-packages."""
+    try:
+        removed = uninstall_sitecustomize(venv)
+        if removed:
+            typer.echo(f"Removed: {removed}")
+        else:
+            typer.echo("No hook installed.")
+    except FileNotFoundError as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(1) from exc
 
 
 def main() -> None:

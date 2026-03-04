@@ -36,3 +36,16 @@ Roadmap and status are tracked in GitHub Issues.
 - [Issue 22](https://github.com/aelasmar01/FlightLog/issues/22): `flightlog sign/verify`
 - [Issue 23](https://github.com/aelasmar01/FlightLog/issues/23): Packaging + releases
 - [Issue 24](https://github.com/aelasmar01/FlightLog/issues/24): Project/roadmap tracking
+
+### New Backlog (Phase 3+)
+
+- [Issue 25](https://github.com/aelasmar01/FlightLog/issues/25): MCP HTTP proxy SSE/chunked streaming support
+- [Issue 26](https://github.com/aelasmar01/FlightLog/issues/26): `flightlog mcp wrap-http` HTTP transport recorder
+- [Issue 27](https://github.com/aelasmar01/FlightLog/issues/27): MCP discovery expansion (Cursor/Zed/custom backends)
+- [Issue 28](https://github.com/aelasmar01/FlightLog/issues/28): Sequence-aware MCP stubs (per-call ordered responses)
+- [Issue 29](https://github.com/aelasmar01/FlightLog/issues/29): OpenTelemetry span capture embedded in packs
+- [Issue 30](https://github.com/aelasmar01/FlightLog/issues/30): Schema versioning policy + `--allow-major` validation
+- [Issue 31](https://github.com/aelasmar01/FlightLog/issues/31): `flightlog sdk install-sitecustomize` CLI helper
+- [Issue 32](https://github.com/aelasmar01/FlightLog/issues/32): JS/TS LLM capture quickstart (proxy-based)
+- [Issue 33](https://github.com/aelasmar01/FlightLog/issues/33): v0.1.0 release + PyPI + install story
+- [Issue 34](https://github.com/aelasmar01/FlightLog/issues/34): CONTRIBUTING.md + issue tracking housekeeping

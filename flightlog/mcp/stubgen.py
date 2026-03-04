@@ -32,7 +32,7 @@ def generate_stub(
     messages: Iterable[McpMessage], *, server_name: str | None = None
 ) -> dict[str, Any]:
     pending: dict[str, tuple[str, str]] = {}
-    methods: dict[str, dict[str, dict[str, Any]]] = {}
+    methods: dict[str, dict[str, list[Any]]] = {}
 
     for message in messages:
         if (
@@ -57,7 +57,16 @@ def generate_stub(
                 response_payload["result"] = message.payload["result"]
             if "error" in message.payload:
                 response_payload["error"] = message.payload["error"]
-            method_map[request_hash] = canonicalize(response_payload)
+            # Sequence support: accumulate responses as a list so repeated
+            # identical calls can return different responses in order.
+            existing = method_map.get(request_hash)
+            if existing is None:
+                method_map[request_hash] = [canonicalize(response_payload)]
+            elif isinstance(existing, list):
+                existing.append(canonicalize(response_payload))
+            else:
+                # Backward-compat: upgrade old single-dict entry to a list.
+                method_map[request_hash] = [existing, canonicalize(response_payload)]
 
     return {
         "schema_version": "1",
